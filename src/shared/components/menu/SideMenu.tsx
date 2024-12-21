@@ -12,7 +12,7 @@ interface SideMenuProps {
 
 const NAVIGATION = [
     { title: "Membros", icon: <Diversity3/>, path: "/membros" },
-    { title: "Mensagens", icon: <WhatsApp />, path: "mensagens/whatssap" },
+    { title: "Mensagens", icon: <WhatsApp />, path: "/mensagens/whatssap" },
   
 ];
 

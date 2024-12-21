@@ -4,11 +4,12 @@ import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-
 import MenuIcon from "@mui/icons-material/Menu";
 import { Sun, Moon } from "lucide-react";
 import { useAppThemeContext } from "../../contexts";
 import SideMenu from "./SideMenu"; // Importando o SideMenu
+import { ExitToApp } from "@mui/icons-material";
+import { useTheme } from "@mui/material";
 
 interface PrimarySearchAppBarProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ interface PrimarySearchAppBarProps {
 
 const AppBarMenu: React.FC<PrimarySearchAppBarProps> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const theme = useTheme();
 
 
   const { toggleTheme, themeName } = useAppThemeContext();
@@ -25,8 +27,14 @@ const AppBarMenu: React.FC<PrimarySearchAppBarProps> = ({ children }) => {
   };
 
 
-
-
+  const handleLogout = () => {
+    // Remove o token e os dados do usuário do localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+  
+    // Redireciona para a página de login
+    window.location.href = "/login"; // Altere o caminho conforme necessário
+  };
 
 
 
@@ -61,6 +69,9 @@ const AppBarMenu: React.FC<PrimarySearchAppBarProps> = ({ children }) => {
             {/* Botão de Alternar Tema */}
             <IconButton onClick={toggleTheme} color="inherit">
               {themeName === "dark" ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+            </IconButton>
+            <IconButton onClick={handleLogout} color="inherit">
+                <ExitToApp sx={{color: theme.palette.primary.contrastText}}/>
             </IconButton>
           </Toolbar>
         </AppBar>
