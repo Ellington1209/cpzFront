@@ -133,8 +133,7 @@ export default function Membro() {
                         data={filteredData}
                         loading={loading}
                         handlerEditarAction={handleEdit}
-                        handlerDeletarAction={handleDelete} 
-                        selected={selected}
+                        handlerDeletarAction={handleDelete}                      
                         labelCaption="Nenhum membro encontrado."
                         labelTable="Lista de Membros"
                     />

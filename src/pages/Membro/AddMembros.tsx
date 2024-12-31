@@ -85,7 +85,7 @@ interface AddMembrosProps {
     if (validateFields()) {
       try {
         showLoader("Salvando dados...");
-        const response = await Service.create(formData, "membros/create");
+        await Service.create(formData, "membros/create");
         showMessage("Operação realizada com sucesso!", "success");
         setFormData({
           id: "",

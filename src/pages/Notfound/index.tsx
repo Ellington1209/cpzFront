@@ -20,7 +20,7 @@ export default function NotFound(): JSX.Element {
     >
       <Image src={abduction}  />
 
-      <Typography variant="h1" color="primary" fontWeight="bold" className="mt-8">
+      <Typography variant="h1" color="text.secondary" fontWeight="bold" className="mt-8">
         Vish...
       </Typography>
       
