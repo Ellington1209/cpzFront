@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Modal,
@@ -16,6 +16,7 @@ import { TableData } from "./type/membro";
 import { PatternFormat } from "react-number-format";
 import Service from "../../shared/service";
 import { useLoader } from "../../shared/contexts/LoaderProvider";
+import SelectGrupos from "../../shared/components/Selects/SelectGrupos";
 
 interface EditModalProps {
   open: boolean;
@@ -30,19 +31,26 @@ export function EditModal({
   handleSave,
   memberData,
 }: EditModalProps) {
-  const [formData, setFormData] = React.useState<TableData>(memberData);
-  const [errors, setErrors] = React.useState({
+  const [formData, setFormData] = useState<TableData>(memberData);
+  const [selectedGrupos, setSelectedGrupos] = useState<number[]>(
+    memberData.grupos.map((grupo) => grupo.id) // Preenche os grupos selecionados
+  );
+  const [errors, setErrors] = useState({
     name: false,
     nome_crente: false,
     telefone_celular: false,
     whatsapp: false,
   });
   const { showLoader, hideLoader } = useLoader();
-  React.useEffect(() => {
+
+  useEffect(() => {
     setFormData(memberData); // Atualiza os dados ao abrir o modal
+    setSelectedGrupos(memberData.grupos.map((grupo) => grupo.id)); // Atualiza os grupos selecionados
   }, [memberData]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: false }));
@@ -75,10 +83,14 @@ export function EditModal({
     if (validateFields()) {
       try {
         showLoader("Editando dados...");
-        const response = await Service.update(formData.id, formData, "membros/update");
+        const dataToSend = {
+          ...formData,
+          grupos: selectedGrupos, // Inclui os grupos selecionados no payload
+        };
+        const response = await Service.update(formData.id, dataToSend, "membros/update");
         handleSave(response.data); // Atualiza o estado com os dados atualizados
         handleClose();
-        hideLoader(); 
+        hideLoader();
       } catch (error) {
         hideLoader();
         console.error("Erro ao atualizar membro:", error);
@@ -165,9 +177,18 @@ export function EditModal({
               )}
             </FormControl>
           </Grid2>
+
+          {/* Select de Grupos */}
+          <Grid2 size={{ xs: 12, lg: 6, xl: 6 }}>
+            <SelectGrupos
+              value={selectedGrupos}
+              onChange={setSelectedGrupos}
+              label="Grupos"
+            />
+          </Grid2>
         </Grid2>
         <Box mt={3} display="flex" justifyContent="space-between">
-          <Button variant="contained" color="primary"  onClick={handleClose}>
+          <Button variant="contained" color="primary" onClick={handleClose}>
             Cancelar
           </Button>
           <Button variant="contained" color="primary" onClick={handleSubmit}>

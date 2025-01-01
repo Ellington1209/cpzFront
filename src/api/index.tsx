@@ -1,8 +1,8 @@
 import Axios from "axios";
 
-
-
-export const rootUrl = 'hhttp://147.182.251.158:8989/api/';
+//'http://localhost:8989/api/';
+//'http://147.182.251.158:8989/api/';
+export const rootUrl = 'http://147.182.251.158:8989/api/';
 
 //export const rootUrl = `https://${window.location.hostname}:443/`;
 

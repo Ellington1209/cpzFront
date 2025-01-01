@@ -10,17 +10,18 @@ import {
   InputLabel,
 } from "@mui/material";
 import { TableData } from "./type/membro";
-import { SelectChangeEvent } from "@mui/material"; // Importar o tipo correto para Select
+import { SelectChangeEvent } from "@mui/material";
 import Service from "../../shared/service";
 import { useSnackbar } from "../../shared/contexts/SnackbarProvider";
 import { PatternFormat } from "react-number-format";
 import { useLoader } from "../../shared/contexts/LoaderProvider";
+import SelectGrupos from "../../shared/components/Selects/SelectGrupos";
 
 interface AddMembrosProps {
-    handleGetMembros: () => void; 
-  }
+  handleGetMembros: () => void;
+}
 
-  export function AddMembros({ handleGetMembros }: AddMembrosProps) {
+export function AddMembros({ handleGetMembros }: AddMembrosProps) {
   const { showMessage } = useSnackbar();
   const { showLoader, hideLoader } = useLoader();
   const [formData, setFormData] = useState<TableData>({
@@ -29,7 +30,9 @@ interface AddMembrosProps {
     nome_crente: "",
     telefone_celular: "",
     whatsapp: "",
+    grupos: [], // Adiciona grupos como um array vazio
   });
+  const [selectedGrupos, setSelectedGrupos] = useState<number[]>([]); // Estado para os grupos selecionados
 
   const [errors, setErrors] = useState({
     name: false,
@@ -43,30 +46,21 @@ interface AddMembrosProps {
   ) => {
     const { name, value } = e.target;
 
-    // Atualiza os dados do formulário
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Remove o erro do campo ao começar a digitar novamente
     setErrors((prev) => ({ ...prev, [name]: false }));
   };
 
   const handlePhoneChange = (values: { value: string }) => {
     const { value } = values;
 
-    // Atualiza o campo de telefone
     setFormData((prev) => ({ ...prev, telefone_celular: value }));
-
-    // Remove o erro ao começar a digitar novamente
     setErrors((prev) => ({ ...prev, telefone_celular: false }));
   };
 
   const handleSelectChange = (e: SelectChangeEvent<string>) => {
     const { value } = e.target;
 
-    // Atualiza o campo WhatsApp
     setFormData((prev) => ({ ...prev, whatsapp: value }));
-
-    // Remove o erro do campo WhatsApp ao mudar a seleção
     setErrors((prev) => ({ ...prev, whatsapp: false }));
   };
 
@@ -85,7 +79,11 @@ interface AddMembrosProps {
     if (validateFields()) {
       try {
         showLoader("Salvando dados...");
-        await Service.create(formData, "membros/create");
+        const dataToSend = {
+          ...formData,
+          grupos: selectedGrupos, // Adiciona os grupos selecionados na requisição
+        };
+        await Service.create(dataToSend, "membros/create");
         showMessage("Operação realizada com sucesso!", "success");
         setFormData({
           id: "",
@@ -93,9 +91,11 @@ interface AddMembrosProps {
           nome_crente: "",
           telefone_celular: "",
           whatsapp: "",
-        }); // Limpa o formulário
+          grupos: [], // Reseta o array de grupos
+        });
+        setSelectedGrupos([]); // Limpa os grupos selecionados
         hideLoader();
-        handleGetMembros()
+        handleGetMembros();
       } catch (error) {
         showMessage("Ocorreu um erro ao criar novo contato!", "error");
       }
@@ -132,7 +132,7 @@ interface AddMembrosProps {
           />
         </Grid2>
 
-        <Grid2 size={{ xs: 6, lg: 3, xl: 3 }}>
+        <Grid2 size={{ xs: 6, lg: 2, xl: 2 }}>
           <PatternFormat
             label="Telefone"
             format="(##) # ####-####"
@@ -148,7 +148,7 @@ interface AddMembrosProps {
             }
           />
         </Grid2>
-        <Grid2 size={{ xs: 6, lg: 3, xl: 3 }}>
+        <Grid2 size={{ xs: 6, lg: 2, xl: 2 }}>
           <FormControl fullWidth size="small" error={errors.whatsapp}>
             <InputLabel>WhatsApp</InputLabel>
             <Select
@@ -165,6 +165,15 @@ interface AddMembrosProps {
               </Box>
             )}
           </FormControl>
+        </Grid2>
+
+        {/* Componente de seleção de grupos */}
+        <Grid2 size={{ xs: 6, lg: 3, xl: 3 }}>
+          <SelectGrupos
+            value={selectedGrupos}
+            onChange={setSelectedGrupos}
+            label="Selecione os Grupos"
+          />
         </Grid2>
       </Grid2>
       <Box mt={3} display="flex" justifyContent="flex-end">

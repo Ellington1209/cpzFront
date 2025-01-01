@@ -26,7 +26,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
   headers,
   data,
   handlerEditarAction,
-  handlerDelete,
+  
   labelCaption,
   loading,
   handlerDetalhesAction,

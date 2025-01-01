@@ -1,4 +1,4 @@
-import { Box, Grid2, TextField } from "@mui/material";
+import { Box, Button, Grid2, TextField } from "@mui/material";
 import { TableComponent } from "../../shared/components";
 import Service from "../../shared/service";
 import { useState, useEffect } from "react";
@@ -21,6 +21,7 @@ const headers: TableColumn[] = [
     { id: 'nome_crente', label: 'Nome de crente', props: { align: 'left' } },
     { id: 'telefone_celular', label: 'Telefone', props: { align: 'right' } },
     { id: 'whatsapp', label: 'WhatsApp', props: { align: 'right' } },
+    { id: 'grupos', label: 'Grupos', props: { align: 'left' } },
 ];
 
 export default function Membro() {
@@ -28,11 +29,11 @@ export default function Membro() {
     const [filteredData, setFilteredData] = useState<TableData[]>([]);
     const [searchTerm, setSearchTerm] = useState(""); // Termo de pesquisa
     const [loading, setLoading] = useState(false);
-    const [selected, setSelected] = useState<string[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<TableData | null>(null);
     const { showLoader, hideLoader } = useLoader();
     const { showMessage } = useSnackbar();
+    const [grupo, setGrupo] = useState('');
 
     const handleGetMembros = async () => {
         setLoading(true);
@@ -49,6 +50,24 @@ export default function Membro() {
             setLoading(false);
         }
     };
+
+    const salvarGrupo = async () => {
+        try {
+            showLoader("Adicionando grupo ...");
+            const data = {
+                nome: grupo
+            }
+            await Service.create(data, 'grupo/create');
+            hideLoader();
+            showMessage("Grupo adicionado com sucesso.", "success");
+
+
+        } catch (error) {
+            hideLoader();
+            showMessage("Erro ao ao salvar grupo.", "error");
+            console.log(error)
+        }
+    }
 
     useEffect(() => {
         handleGetMembros();
@@ -117,23 +136,38 @@ export default function Membro() {
 
 
                 <Grid2 size={{ xs: 12 }} padding={1}>
-                    <Box padding={2} width={350}>
-                        <TextField
-                            label="Pesquisar"
-                            variant="outlined"
-                            fullWidth
-                            size="small"
-                            value={searchTerm}
-                            onChange={handleSearch}
-                            placeholder="Digite o nome ou nome de crente"
-                        />
-                    </Box>
+                    <Grid2 container spacing={2} padding={2}>
+                        <Grid2 size={{ xs: 6, lg: 3, xl: 3 }}>
+                            <TextField
+                                label="Pesquisar"
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                value={searchTerm}
+                                onChange={handleSearch}
+                                placeholder="Digite o nome ou nome de crente"
+                            />
+                        </Grid2>
+                        <Grid2 size={{ xs: 6, lg: 3, xl: 3 }}>
+                            <TextField
+                                size="small"
+                                label='adicione novo grupo'
+                                value={grupo}
+                                onChange={(e) => setGrupo(e.target.value)}
+                            />
+                            <Button variant="contained" size="large" onClick={salvarGrupo}>salvar</Button>
+                        </Grid2>
+
+                    </Grid2>
                     <TableComponent
                         headers={headers}
-                        data={filteredData}
+                        data={filteredData.map((item) => ({
+                            ...item,
+                            grupos: item.grupos.map((grupo) => grupo.nome).join(", "), // Concatena os nomes dos grupos
+                        }))}
                         loading={loading}
                         handlerEditarAction={handleEdit}
-                        handlerDeletarAction={handleDelete}                      
+                        handlerDeletarAction={handleDelete}
                         labelCaption="Nenhum membro encontrado."
                         labelTable="Lista de Membros"
                     />

@@ -4,4 +4,5 @@ export interface TableData {
     nome_crente?: string;
     whatsapp: string; 
     telefone_celular: string;
+    grupos: { id: number; nome: string }[]; 
 }

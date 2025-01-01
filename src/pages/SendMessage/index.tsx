@@ -13,51 +13,61 @@ import AttachFileIcon from "@mui/icons-material/AttachFile"; // Ícone do clipe
 import { useSnackbar } from "../../shared/contexts/SnackbarProvider";
 import { useLoader } from "../../shared/contexts/LoaderProvider";
 import Service from "../../shared/service";
+import SelectGrupos from "../../shared/components/Selects/SelectGrupos"; // Importa o SelectGrupos
 
 export default function SendMessage() {
   const { showMessage } = useSnackbar();
   const { showLoader, hideLoader } = useLoader();
   const [message, setMessage] = useState("");
+  const [selectedGrupos, setSelectedGrupos] = useState<number[] | null>(null); // Estado para os grupos selecionados
   const [loading, setLoading] = useState(false);
   const [attachment, setAttachment] = useState<File | null>(null); // Estado para o arquivo anexado
-   const theme = useTheme();
+  const theme = useTheme();
   const maxCharacters = 1000; // Limite de caracteres
 
   const handleSendMessage = async () => {
-
-  
     try {
       setLoading(true);
       showLoader("Enviando mensagem...");
-  
+
       const formData = new FormData();
       formData.append("message", message);
-  
+
+      if (selectedGrupos) {
+        formData.append("grupos", JSON.stringify(selectedGrupos)); // Adiciona os grupos selecionados
+      }
+
       if (attachment) {
         formData.append("media", attachment); // Campo para o arquivo anexado
         formData.append("fileName", attachment.name); // Nome do arquivo
         formData.append("mediaType", attachment.type.split("/")[0]); // Tipo do arquivo (image, video)
-  
-        const response = await Service.create(formData, "whatsapp/send-media")
-  
+
+        const response = await Service.create(formData, "whatsapp/send-media");
+
         if (response.success) {
           showMessage("Mensagem com mídia enviada com sucesso!", "success");
         } else {
           throw new Error(response.message || "Erro ao enviar mensagem de mídia.");
         }
       } else {
-        const response = await Service.create({ message }, "whatsapp/send-text");
-  
+        const payload = {
+          message,
+          grupos: selectedGrupos, // Adiciona os grupos selecionados (pode ser null)
+        };
+
+        const response = await Service.create(payload, "whatsapp/send-text");
+
         if (response.success) {
           showMessage("Mensagem enviada com sucesso!", "success");
         } else {
           throw new Error(response.message || "Erro ao enviar mensagem.");
         }
       }
-  
+
       // Limpar campos após sucesso
       setMessage("");
       setAttachment(null);
+      setSelectedGrupos(null);
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.details ||
@@ -86,6 +96,16 @@ export default function SendMessage() {
         <Typography variant="body2" mb={2} color="text.secondary">
           Digite a mensagem que será enviada para todos os membros cadastrados no sistema. Você pode anexar uma imagem ou vídeo.
         </Typography>
+
+        {/* Select de Grupos */}
+        <Box mb={3}>
+          <SelectGrupos
+            value={selectedGrupos || []} // Passa os grupos selecionados
+            onChange={setSelectedGrupos} // Atualiza o estado com os grupos selecionados
+            label="Selecione os Grupos (opcional)"
+          />
+        </Box>
+
         <Box sx={{ position: "relative", mb: 3 }}>
           <TextField
             fullWidth
@@ -100,10 +120,9 @@ export default function SendMessage() {
           />
           <IconButton
             component="label"
-            sx={{ position: "absolute", top: "8px", right: "8px",  }}
+            sx={{ position: "absolute", top: "8px", right: "8px" }}
           >
-           <AttachFileIcon sx={{ color: theme.palette.primary.contrastText }} />
-
+            <AttachFileIcon sx={{ color: theme.palette.primary.contrastText }} />
             <input
               type="file"
               accept="image/*,video/*"
@@ -117,11 +136,11 @@ export default function SendMessage() {
             Arquivo anexado: {attachment.name}
           </Typography>
         )}
-        <Box >
+        <Box>
           <Button
             variant="contained"
             color="primary"
-            onClick={handleSendMessage}           
+            onClick={handleSendMessage}
             startIcon={loading && <CircularProgress size={20} />}
           >
             {loading ? "Enviando..." : "Enviar"}
